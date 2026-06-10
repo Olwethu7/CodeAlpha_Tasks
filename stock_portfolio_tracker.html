@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stock Portfolio Tracker</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; }
+  header { background: #fff; border-bottom: 1px solid #e5e4e0; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  header h1 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  header span { font-size: 13px; color: #888; }
+  .container { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .metric { background: #fff; border: 1px solid #e5e4e0; border-radius: 10px; padding: 1rem 1.25rem; }
+  .metric-label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .metric-value { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+  .card { background: #fff; border: 1px solid #e5e4e0; border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem; }
+  .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid #e5e4e0; display: flex; align-items: center; justify-content: space-between; }
+  .card-header h2 { font-size: 14px; font-weight: 600; }
+  .card-body { padding: 1.25rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #888; padding: 0 12px 10px; }
+  th:last-child, td:last-child { text-align: right; }
+  td { padding: 12px; border-top: 1px solid #f0efeb; vertical-align: middle; }
+  tr:first-child td { border-top: none; }
+  tfoot td { border-top: 2px solid #e5e4e0; font-weight: 600; font-size: 14px; }
+  .symbol { font-weight: 700; font-size: 13px; }
+  .company { font-size: 12px; color: #888; margin-top: 1px; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px; background: #eef6ee; color: #2e7d32; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  label { font-size: 13px; font-weight: 500; color: #444; }
+  select, input[type=number] { border: 1px solid #ddd; border-radius: 8px; padding: 8px 12px; font-size: 14px; background: #fff; color: #1a1a18; width: 100%; outline: none; transition: border-color 0.15s; }
+  select:focus, input[type=number]:focus { border-color: #555; }
+  .preview-box { background: #f5f5f3; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #555; margin-top: 12px; min-height: 38px; }
+  .preview-box strong { color: #1a1a18; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: background 0.15s, opacity 0.15s; }
+  .btn-dark { background: #1a1a18; color: #fff; }
+  .btn-dark:hover { background: #333; }
+  .btn-outline { background: #fff; color: #1a1a18; border: 1px solid #ddd; }
+  .btn-outline:hover { background: #f5f5f3; }
+  .btn-danger { background: #fff; color: #c0392b; border: 1px solid #f0c4c0; }
+  .btn-danger:hover { background: #fdf2f0; }
+  .btn-export { background: #fff; color: #1a1a18; border: 1px solid #ddd; font-size: 13px; padding: 6px 14px; }
+  .btn-export:hover { background: #f5f5f3; }
+  .action-row { display: flex; gap: 10px; margin-top: 1rem; align-items: center; }
+  .msg { font-size: 13px; margin-left: auto; }
+  .msg.ok { color: #2e7d32; }
+  .msg.err { color: #c0392b; }
+  .remove-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0efeb; }
+  .remove-row:last-child { border-bottom: none; }
+  .remove-info .sym { font-weight: 700; font-size: 14px; }
+  .remove-info .detail { font-size: 12px; color: #888; margin-top: 2px; }
+  .empty { text-align: center; padding: 2.5rem; color: #999; font-size: 14px; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid #e5e4e0; padding: 0 1.25rem; background: #fff; margin-bottom: 1.5rem; border-radius: 12px 12px 0 0; }
+  .tabs + .tab-content { background: #fff; border: 1px solid #e5e4e0; border-top: none; border-radius: 0 0 12px 12px; padding: 1.25rem; margin-top: -1.5rem; margin-bottom: 1.5rem; }
+  .tab-btn { padding: 14px 16px; font-size: 14px; border: none; background: none; cursor: pointer; color: #888; border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; transition: color 0.15s; }
+  .tab-btn.active { color: #1a1a18; border-bottom-color: #1a1a18; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .market-table td:first-child { font-weight: 700; font-size: 13px; width: 80px; }
+  .market-table td:last-child { font-weight: 600; }
+  @media(max-width:600px) { .form-grid { grid-template-columns: 1fr; } .metrics { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Stock Portfolio Tracker</h1>
+  <span id="ts"></span>
+</header>
+
+<div class="container">
+  <div class="metrics" id="metrics"></div>
+
+  <div class="card">
+    <div class="tabs" role="tablist">
+      <button class="tab-btn active" role="tab" aria-selected="true" onclick="showTab('portfolio', this)">Portfolio</button>
+      <button class="tab-btn" role="tab" onclick="showTab('add', this)">Add / Remove</button>
+      <button class="tab-btn" role="tab" onclick="showTab('market', this)">Market prices</button>
+    </div>
+
+    <!-- Portfolio tab -->
+    <div id="tab-portfolio" class="tab-panel active" style="padding:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem 0.75rem;border-bottom:1px solid #f0efeb">
+        <span style="font-size:13px;font-weight:600;color:#444">Holdings</span>
+        <button class="btn btn-export" onclick="exportCSV()">&#8595; Export CSV</button>
+      </div>
+      <div id="portfolio-table" style="padding:0 0.25rem"></div>
+    </div>
+
+    <!-- Add/Remove tab -->
+    <div id="tab-add" class="tab-panel" style="padding:1.25rem">
+      <p style="font-size:14px;font-weight:600;margin-bottom:1rem">Add a position</p>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="sel">Stock</label>
+          <select id="sel" onchange="updatePreview()"><option value="">Select stock…</option></select>
+        </div>
+        <div class="form-group">
+          <label for="qty">Shares</label>
+          <input id="qty" type="number" min="1" placeholder="e.g. 10" oninput="updatePreview()" />
+        </div>
+      </div>
+      <div class="preview-box" id="preview">Select a stock and enter shares to preview the value.</div>
+      <div class="action-row">
+        <button class="btn btn-dark" onclick="addStock()">Add to portfolio</button>
+        <span class="msg" id="add-msg"></span>
+      </div>
+
+      <hr style="border:none;border-top:1px solid #e5e4e0;margin:1.5rem 0" />
+
+      <p style="font-size:14px;font-weight:600;margin-bottom:1rem">Remove a position</p>
+      <div id="remove-list"></div>
+    </div>
+
+    <!-- Market tab -->
+    <div id="tab-market" class="tab-panel" style="padding:0">
+      <table class="market-table" style="margin:0">
+        <thead><tr><th>Symbol</th><th>Company</th><th style="text-align:right">Price</th></tr></thead>
+        <tbody id="market-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const PRICES = {AAPL:180.50,TSLA:250.75,GOOGL:140.25,MSFT:420.30,AMZN:185.60,META:480.90,NVDA:950.00,JPM:200.15,V:275.40,WMT:65.80};
+const NAMES  = {AAPL:"Apple Inc.",TSLA:"Tesla Inc.",GOOGL:"Alphabet Inc.",MSFT:"Microsoft Corp.",AMZN:"Amazon.com Inc.",META:"Meta Platforms Inc.",NVDA:"NVIDIA Corp.",JPM:"JPMorgan Chase",V:"Visa Inc.",WMT:"Walmart Inc."};
+
+let portfolio = {};
+try { portfolio = JSON.parse(localStorage.getItem('spt_v2') || '{}'); } catch(e) {}
+function persist() { try { localStorage.setItem('spt_v2', JSON.stringify(portfolio)); } catch(e) {} }
+
+const fmt = n => '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+const now = () => new Date().toLocaleString('en-US', {month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+document.getElementById('ts').textContent = now();
+
+// Populate select
+const sel = document.getElementById('sel');
+Object.keys(PRICES).forEach(s => { const o = document.createElement('option'); o.value=s; o.textContent=s+' — '+NAMES[s]; sel.appendChild(o); });
+
+// Populate market table
+const mb = document.getElementById('market-body');
+Object.keys(PRICES).forEach(s => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${s}</td><td style="color:#888;font-size:13px">${NAMES[s]}</td><td>${fmt(PRICES[s])}</td>`;
+  mb.appendChild(tr);
+});
+
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active'); btn.setAttribute('aria-selected','true');
+}
+
+function updatePreview() {
+  const sym = sel.value, qty = parseInt(document.getElementById('qty').value);
+  const pre = document.getElementById('preview');
+  if (!sym) { pre.innerHTML = 'Select a stock and enter shares to preview the value.'; return; }
+  const price = PRICES[sym];
+  if (qty > 0) {
+    const val = qty * price;
+    const existing = portfolio[sym] ? ` (adds to your existing ${portfolio[sym].quantity} shares)` : '';
+    pre.innerHTML = `<strong>${qty} shares</strong> of <strong>${sym}</strong> at ${fmt(price)} = <strong>${fmt(val)}</strong>${existing}`;
+  } else {
+    pre.innerHTML = `${sym} — current price: ${fmt(price)}`;
+  }
+}
+
+function addStock() {
+  const sym = sel.value, qty = parseInt(document.getElementById('qty').value);
+  const msg = document.getElementById('add-msg');
+  if (!sym) { msg.className='msg err'; msg.textContent='Please select a stock.'; return; }
+  if (!qty || qty < 1) { msg.className='msg err'; msg.textContent='Enter a valid number of shares.'; return; }
+  if (portfolio[sym]) {
+    portfolio[sym].quantity += qty;
+    portfolio[sym].total_value = portfolio[sym].quantity * PRICES[sym];
+    msg.textContent = `Updated — ${sym} now ${portfolio[sym].quantity} shares (${fmt(portfolio[sym].total_value)}).`;
+  } else {
+    portfolio[sym] = { symbol:sym, quantity:qty, price_per_share:PRICES[sym], total_value:qty*PRICES[sym] };
+    msg.textContent = `Added ${qty} shares of ${sym}.`;
+  }
+  msg.className = 'msg ok';
+  persist(); renderAll();
+  sel.value = ''; document.getElementById('qty').value = ''; updatePreview();
+  setTimeout(() => { msg.textContent=''; }, 3500);
+}
+
+function removeStock(sym) {
+  delete portfolio[sym]; persist(); renderAll();
+}
+
+function renderAll() { renderMetrics(); renderPortfolio(); renderRemove(); }
+
+function renderMetrics() {
+  const syms = Object.keys(portfolio);
+  const total = syms.reduce((a,s) => a + portfolio[s].total_value, 0);
+  const largest = syms.length ? syms.reduce((a,s) => portfolio[s].total_value > portfolio[a].total_value ? s : a, syms[0]) : '—';
+  document.getElementById('metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Total value</div><div class="metric-value">${fmt(total)}</div></div>
+    <div class="metric"><div class="metric-label">Positions</div><div class="metric-value">${syms.length}</div></div>
+    <div class="metric"><div class="metric-label">Largest holding</div><div class="metric-value" style="font-size:20px">${largest}</div></div>
+  `;
+}
+
+function renderPortfolio() {
+  const syms = Object.keys(portfolio);
+  const pt = document.getElementById('portfolio-table');
+  if (!syms.length) {
+    pt.innerHTML = '<div class="empty">No positions yet. Use the Add / Remove tab to get started.</div>';
+    return;
+  }
+  const total = syms.reduce((a,s) => a + portfolio[s].total_value, 0);
+  const rows = syms.map(s => {
+    const d = portfolio[s];
+    const pct = total > 0 ? ((d.total_value / total) * 100).toFixed(1) : '0.0';
+    return `<tr>
+      <td><div class="symbol">${s}</div><div class="company">${NAMES[s]}</div></td>
+      <td>${d.quantity.toLocaleString()}</td>
+      <td>${fmt(d.price_per_share)}</td>
+      <td>${fmt(d.total_value)}</td>
+      <td><span class="pill">${pct}%</span></td>
+    </tr>`;
+  }).join('');
+  pt.innerHTML = `<table>
+    <thead><tr><th>Stock</th><th>Shares</th><th>Price / share</th><th>Total value</th><th style="text-align:left">Weight</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td colspan="3" style="padding:12px">Total portfolio</td><td style="padding:12px">${fmt(total)}</td><td></td></tr></tfoot>
+  </table>`;
+}
+
+function renderRemove() {
+  const syms = Object.keys(portfolio);
+  const el = document.getElementById('remove-list');
+  if (!syms.length) { el.innerHTML = '<p style="font-size:14px;color:#999">No positions to remove.</p>'; return; }
+  el.innerHTML = syms.map(s => `
+    <div class="remove-row">
+      <div class="remove-info">
+        <div class="sym">${s}</div>
+        <div class="detail">${portfolio[s].quantity} shares · ${fmt(portfolio[s].total_value)}</div>
+      </div>
+      <button class="btn btn-danger" onclick="removeStock('${s}')">Remove</button>
+    </div>`).join('');
+}
+
+function exportCSV() {
+  const syms = Object.keys(portfolio);
+  if (!syms.length) { alert('Portfolio is empty — nothing to export.'); return; }
+  const total = syms.reduce((a,s) => a + portfolio[s].total_value, 0);
+  const ts = new Date().toISOString().replace('T',' ').slice(0,19);
+  let csv = 'Symbol,Company,Shares,Price Per Share ($),Total Value ($),Weight (%),Date Exported\n';
+  syms.forEach(s => {
+    const d = portfolio[s];
+    const pct = total > 0 ? ((d.total_value / total) * 100).toFixed(2) : '0.00';
+    csv += `${s},"${NAMES[s]}",${d.quantity},${d.price_per_share.toFixed(2)},${d.total_value.toFixed(2)},${pct},"${ts}"\n`;
+  });
+  csv += `\nTotal,,,,${total.toFixed(2)},100.00,"${ts}"\n`;
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `portfolio_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+renderAll();
+</script>
+</body>
+</html>
