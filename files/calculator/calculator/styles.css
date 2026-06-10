@@ -1,0 +1,248 @@
+/* ============================================================
+   styles.css — Calculator · CodeAlpha Task
+   Theme: deep slate dark with amber accent
+   ============================================================ */
+
+/* ── Reset & base ─────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Palette */
+  --bg-page:       #0f1117;
+  --bg-calc:       #1a1d27;
+  --bg-display:    #12141e;
+  --bg-digit:      #252836;
+  --bg-function:   #1e2130;
+  --bg-operator:   #2e3350;
+  --bg-equals:     #f5a623;
+  --bg-equals-h:   #fbbf4a;
+
+  --text-primary:  #f0f2ff;
+  --text-dim:      #7c82a0;
+  --text-operator: #a0aaff;
+  --text-equals:   #1a1d27;
+  --text-title:    #7c82a0;
+  --text-tag:      #f5a623;
+
+  --border:        #2a2e42;
+  --shadow-calc:   0 32px 80px rgba(0,0,0,0.6);
+  --shadow-btn:    0 2px 8px rgba(0,0,0,0.35);
+  --radius-calc:   22px;
+  --radius-btn:    14px;
+
+  /* Sizing */
+  --btn-size:      72px;
+  --gap:           10px;
+  --font-display:  'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-ui:       -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ── Page ─────────────────────────────────────────────────── */
+body {
+  background: var(--bg-page);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-ui);
+  padding: 1.5rem;
+}
+
+/* ── Wrapper ──────────────────────────────────────────────── */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+/* ── Title ────────────────────────────────────────────────── */
+.app-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-title);
+}
+
+.app-title span {
+  color: var(--text-tag);
+}
+
+/* ── Calculator shell ─────────────────────────────────────── */
+.calculator {
+  background: var(--bg-calc);
+  border-radius: var(--radius-calc);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-calc);
+  padding: 1.25rem;
+  width: calc(4 * var(--btn-size) + 3 * var(--gap) + 2.5rem);
+  max-width: 100%;
+}
+
+/* ── Display ──────────────────────────────────────────────── */
+.display {
+  background: var(--bg-display);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  padding: 1rem 1.25rem 0.75rem;
+  margin-bottom: 1rem;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.display__expression {
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--text-dim);
+  min-height: 18px;
+  word-break: break-all;
+  text-align: right;
+  margin-bottom: 4px;
+  transition: opacity 0.2s;
+}
+
+.display__input {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 300;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  word-break: break-all;
+  text-align: right;
+  line-height: 1.1;
+  transition: font-size 0.15s ease;
+}
+
+/* Shrink font when number is long */
+.display__input.medium { font-size: 28px; }
+.display__input.small  { font-size: 22px; }
+
+/* Error state */
+.display__input.error {
+  color: #ff6b6b;
+  font-size: 24px;
+}
+
+/* ── Button grid ──────────────────────────────────────────── */
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4, var(--btn-size));
+  grid-template-rows:    repeat(5, var(--btn-size));
+  gap: var(--gap);
+  justify-content: center;
+}
+
+/* ── Buttons — base ───────────────────────────────────────── */
+.btn {
+  width:  var(--btn-size);
+  height: var(--btn-size);
+  border: none;
+  border-radius: var(--radius-btn);
+  font-family: var(--font-ui);
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--shadow-btn);
+  transition:
+    background  0.12s ease,
+    transform   0.08s ease,
+    box-shadow  0.12s ease;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Focus ring (keyboard nav) */
+.btn:focus-visible {
+  outline: 2px solid var(--text-operator);
+  outline-offset: 2px;
+}
+
+/* Hover lift */
+.btn:hover {
+  filter: brightness(1.18);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
+
+/* Press depression */
+.btn:active,
+.btn.pressed {
+  transform: scale(0.93) translateY(0);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  filter: brightness(0.92);
+}
+
+/* ── Button variants ──────────────────────────────────────── */
+.btn--digit {
+  background: var(--bg-digit);
+  color: var(--text-primary);
+}
+
+.btn--function {
+  background: var(--bg-function);
+  color: var(--text-dim);
+  font-size: 15px;
+}
+
+.btn--operator {
+  background: var(--bg-operator);
+  color: var(--text-operator);
+  font-size: 22px;
+}
+
+/* Active/selected operator highlight */
+.btn--operator.active {
+  background: var(--text-operator);
+  color: var(--bg-calc);
+}
+
+.btn--equals {
+  background: var(--bg-equals);
+  color: var(--text-equals);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.btn--equals:hover {
+  background: var(--bg-equals-h);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 380px) {
+  :root {
+    --btn-size: 64px;
+    --gap: 8px;
+  }
+
+  .display__input { font-size: 30px; }
+  .display__input.medium { font-size: 24px; }
+  .display__input.small  { font-size: 19px; }
+}
+
+@media (max-width: 320px) {
+  :root {
+    --btn-size: 56px;
+    --gap: 6px;
+  }
+}
+
+/* ── Subtle animated glow on equals ──────────────────────── */
+@keyframes glow-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(245,166,35,0.5); }
+  70%  { box-shadow: 0 0 0 10px rgba(245,166,35,0); }
+  100% { box-shadow: 0 0 0 0  rgba(245,166,35,0); }
+}
+
+.btn--equals.pulse {
+  animation: glow-pulse 0.4s ease-out;
+}
